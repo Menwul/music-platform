@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-music"></i> MusicEarn</h2>
+            <p class="user-type">Artist Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <!-- FIXED: Using artist_dashboard -->
+            <a href="{{ url_for('artist_dashboard') }}" class="menu-item">
+                <i class="fas fa-chart-line"></i> Analytics
+            </a>
+            <a href="{{ url_for('upload') }}" class="menu-item active">
+                <i class="fas fa-upload"></i> Upload Music
+            </a>
+            <a href="{{ url_for('referral') }}" class="menu-item">
+                <i class="fas fa-users"></i> Referral Program
+            </a>
+            <a href="#" class="menu-item" onclick="showWithdrawModal()">
+                <i class="fas fa-wallet"></i> Withdraw Funds
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+        
+        <div class="user-balance">
+            <h3>Your Balance</h3>
+            <p class="balance-amount">${{ "%.2f"|format(current_user.balance) }}</p>
+            <p class="storage-info">
+                <i class="fas fa-database"></i> 
+                {{ current_tracks_count }}/50 tracks
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Upload New Track 🎵</h1>
+            <p>Share your music with the world and start earning</p>
+        </div>
+
+        <!-- Upload Progress Bar -->
+        <div class="upload-progress" id="uploadProgress" style="display: none;">
+            <div class="progress-header">
+                <h3>Uploading...</h3>
+                <span class="progress-percentage" id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-details">
+                <span id="progressStatus">Initializing upload...</span>
+            </div>
+        </div>
+
+        <!-- Upload Container -->
+        <div class="upload-container" id="uploadContainer">
+            <div class="upload-card">
+                <div class="upload-header">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h2>Upload Your Music</h2>
+                    <p>Supported formats: MP3, WAV, OGG (Max 16MB per file)</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="title">Track Title *</label>
+                            <input type="text" id="title" name="title" required 
+                                   placeholder="Enter your track title" maxlength="100">
+                            <div class="char-counter">
+                                <span id="titleCounter">0</span>/100
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="genre">Genre</label>
+                            <select id="genre" name="genre">
+                                <option value="">Select Genre</option>
+                                <option value="pop">Pop</option>
+                                <option value="rock">Rock</option>
+                                <option value="hiphop">Hip Hop</option>
+                                <option value="electronic">Electronic</option>
+                                <option value="rnb">R&B</option>
+                                <option value="jazz">Jazz</option>
+                                <option value="classical">Classical</option>
+                                <option value="country">Country</option>
+                                <option value="latin">Latin</option>
+                                <option value="metal">Metal</option>
+                                <option value="reggae">Reggae</option>
+                                <option value="amapiano">Amapiano</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Track Description</label>
+                        <textarea id="description" name="description" 
+                                  placeholder="Describe your track (optional)" 
+                                  rows="3" maxlength="500"></textarea>
+                        <div class="char-counter">
+                            <span id="descCounter">0</span>/500
+                        </div>
+                    </div>
+
+                    <!-- File Upload Area -->
+                    <div class="form-group">
+                        <label for="file">Audio File *</label>
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <input type="file" id="file" name="file" 
+                                   accept=".mp3,.wav,.ogg" required 
+                                   style="display: none;">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <i class="fas fa-music"></i>
+                                <h4>Drop your audio file here</h4>
+                                <p>or click to browse</p>
+                                <span class="file-types">MP3, WAV, OGG - Max 16MB</span>
+                            </div>
+                            <div class="file-preview" id="filePreview" style="display: none;">
+                                <div class="preview-content">
+                                    <i class="fas fa-file-audio"></i>
+                                    <div class="file-info">
+                                        <h5 id="fileName">filename.mp3</h5>
+                                        <p id="fileSize">0 MB</p>
+                                        <span class="file-status" id="fileStatus">Ready to upload</span>
+                                    </div>
+                                    <button type="button" class="btn-remove" onclick="removeFile()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audio Preview -->
+                    <div class="audio-preview" id="audioPreview" style="display: none;">
+                        <h4>Audio Preview</h4>
+                        <div class="audio-player-preview">
+                            <audio controls id="audioPlayer"></audio>
+                        </div>
+                    </div>
+
+                    <!-- Earnings Information -->
+                    <div class="earnings-card">
+                        <h4><i class="fas fa-money-bill-wave"></i> Earnings Information</h4>
+                        <div class="earnings-list">
+                            <div class="earning-item">
+                                <i class="fas fa-play-circle"></i>
+                                <div class="earning-info">
+                                    <strong>$0.05 per play</strong>
+                                    <span>Earn every time someone listens to your track</span>
+                                </div>
+                            </div>
+                            <div class="earning-item">
+                                <i class="fas fa-bolt"></i>
+                                <div class="earning-info">
+                                    <strong>Instant availability</strong>
+                                    <span>Your track becomes available to all streamers immediately</span>
+                                </div>
+                            </div>
+                            <div class="earning-item">
+                                <i class="fas fa-chart-line"></i>
+                                <div class="earning-info">
+                                    <strong>Real-time analytics</strong>
+                                    <span>Track plays and earnings in your dashboard</span>
+                                </div>
+                            </div>
+                            <div class="earning-item">
+                                <i class="fas fa-share-alt"></i>
+                                <div class="earning-info">
+                                    <strong>Share & promote</strong>
+                                    <span>Share your tracks to get more plays</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms Agreement -->
+                    <div class="terms-agreement">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="termsAgree" name="terms_agree" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and confirm that I have the rights to upload this music
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-upload" id="uploadButton" disabled>
+                        <i class="fas fa-upload"></i> Upload Track
+                    </button>
+                </form>
+            </div>
+
+            <!-- Upload Tips & Guidelines -->
+            <div class="upload-sidebar">
+                <div class="tips-card">
+                    <h3>📝 Upload Tips</h3>
+                    <div class="tip-item">
+                        <i class="fas fa-volume-up"></i>
+                        <div class="tip-content">
+                            <h4>Quality Matters</h4>
+                            <p>Upload high-quality audio files (320kbps MP3 recommended) for better listener experience</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-headline"></i>
+                        <div class="tip-content">
+                            <h4>Clear Titles</h4>
+                            <p>Use descriptive and engaging track titles to attract more listeners</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-tags"></i>
+                        <div class="tip-content">
+                            <h4>Proper Genre</h4>
+                            <p>Select the correct genre to help listeners discover your music</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-share-alt"></i>
+                        <div class="tip-content">
+                            <h4>Promote Your Music</h4>
+                            <p>Share your tracks on social media after uploading to get more plays</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="guidelines-card">
+                    <h3>⚡ Quick Guidelines</h3>
+                    <ul class="guidelines-list">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Max file size: 16MB</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Supported formats: MP3, WAV, OGG</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Minimum track length: 30 seconds</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Maximum track length: 15 minutes</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>You must own the rights to the music</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>No explicit content without warning</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recent Uploads -->
+                <div class="recent-uploads">
+                    <h3>Recent Uploads</h3>
+                    {% if recent_tracks %}
+                    <div class="recent-tracks">
+                        {% for track in recent_tracks %}
+                        <div class="recent-track">
+                            <i class="fas fa-music"></i>
+                            <div class="track-info">
+                                <strong>{{ track.title }}</strong>
+                                <span>{{ track.upload_date.strftime('%b %d') }} • {{ track.plays }} plays</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-recent">
+                        <i class="fas fa-music"></i>
+                        <p>No tracks uploaded yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content success-modal">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Upload Successful! 🎉</h2>
+        <p>Your track has been uploaded successfully and is now available to all streamers.</p>
+        <div class="success-actions">
+            <button class="btn btn-primary" onclick="closeSuccessModal()">
+                <i class="fas fa-plus"></i> Upload Another Track
+            </button>
+            <a href="{{ url_for('artist_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-chart-line"></i> View Analytics
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal">
+    <div class="modal-content error-modal">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h2>Upload Failed</h2>
+        <p id="errorMessage">There was an error uploading your track. Please try again.</p>
+        <button class="btn btn-primary" onclick="closeErrorModal()">
+            Try Again
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

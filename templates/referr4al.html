@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/referral.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-music"></i> S.S PRODUCTION</h2>
+            <p class="user-type">{{ current_user.user_type|title }} Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{{ url_for('dashboard') }}" class="menu-item">
+                <i class="fas fa-{{ 'headphones' if current_user.user_type == 'streamer' else 'chart-line' }}"></i>
+                {{ 'Listen & Earn' if current_user.user_type == 'streamer' else 'Analytics' }}
+            </a>
+            {% if current_user.user_type == 'artist' %}
+            <a href="{{ url_for('upload') }}" class="menu-item">
+                <i class="fas fa-upload"></i> Upload Music
+            </a>
+            {% endif %}
+            <a href="{{ url_for('referral') }}" class="menu-item active">
+                <i class="fas fa-users"></i> Referral Program
+            </a>
+            <a href="#" class="menu-item" onclick="showWithdrawModal()">
+                <i class="fas fa-wallet"></i> Withdraw Funds
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+        
+        <div class="user-balance">
+            <h3>Your Balance</h3>
+            <p class="balance-amount">${{ "%.2f"|format(current_user.balance) }}</p>
+            <p class="referral-code">Ref Code: {{ current_user.referral_code }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Referral Program 🎉</h1>
+            <p>Invite friends and earn more money together!</p>
+        </div>
+
+        <!-- Referral Stats -->
+        <div class="referral-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stat-number">{{ referrals|length }}</div>
+                <div class="stat-label">Referred Friends</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-number">${{ "%.2f"|format(referral_earnings) }}</div>
+                <div class="stat-label">Total Referral Earnings</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="stat-number">$5.00</div>
+                <div class="stat-label">Bonus Per Referral</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-number">${{ "%.2f"|format(potential_earnings) }}</div>
+                <div class="stat-label">Potential Earnings</div>
+            </div>
+        </div>
+
+        <!-- Referral Main Section -->
+        <div class="referral-main">
+            <div class="referral-card">
+                <div class="referral-header">
+                    <h2>Your Unique Referral Code</h2>
+                    <p>Share this code with friends and earn $5 for each successful referral</p>
+                </div>
+                
+                <div class="referral-code-display">
+                    <div class="code-container">
+                        <span class="code-value" id="referralCode">{{ current_user.referral_code }}</span>
+                        <button class="btn-copy-code" onclick="copyReferralCode()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="referral-link">
+                    <h3>Or share your referral link:</h3>
+                    <div class="link-container">
+                        <input type="text" id="referralLink" value="{{ referral_url }}" readonly>
+                        <button class="btn-copy-link" onclick="copyReferralLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="share-buttons">
+                    <button class="btn-share whatsapp" onclick="shareViaWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="btn-share facebook" onclick="shareViaFacebook()">
+                        <i class="fab fa-facebook"></i> Facebook
+                    </button>
+                    <button class="btn-share twitter" onclick="shareViaTwitter()">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="btn-share telegram" onclick="shareViaTelegram()">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </button>
+                    <button class="btn-share email" onclick="shareViaEmail()">
+                        <i class="fas fa-envelope"></i> Email
+                    </button>
+                </div>
+            </div>
+
+            <div class="benefits-card">
+                <h3>How It Works 💰</h3>
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Share Your Code</h4>
+                            <p>Send your unique referral code to friends</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Friends Sign Up</h4>
+                            <p>They use your code when registering</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>You Both Earn</h4>
+                            <p>You get $5 instantly when they join</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Keep Earning</h4>
+                            <p>Earn from their activity and referrals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referred Friends -->
+        <div class="referred-friends">
+            <div class="section-header">
+                <h2>Your Referred Friends ({{ referrals|length }})</h2>
+                <div class="friends-stats">
+                    <span class="stat-badge">
+                        <i class="fas fa-users"></i> Total: {{ referrals|length }}
+                    </span>
+                    <span class="stat-badge">
+                        <i class="fas fa-money-bill-wave"></i> Earned: ${{ "%.2f"|format(referral_earnings) }}
+                    </span>
+                </div>
+            </div>
+
+            {% if referrals %}
+            <div class="friends-list">
+                {% for referral in referrals %}
+                <div class="friend-card">
+                    <div class="friend-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="friend-info">
+                        <h4>{{ referral.referred.username }}</h4>
+                        <p class="friend-type">{{ referral.referred.user_type|title }}</p>
+                        <p class="join-date">Joined {{ referral.created_at.strftime('%b %d, %Y') }}</p>
+                    </div>
+                    <div class="friend-status">
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle"></i> Active
+                        </span>
+                    </div>
+                    <div class="friend-earnings">
+                        <div class="earning-amount">+$5.00</div>
+                        <div class="earning-label">Bonus Paid</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h3>No referrals yet</h3>
+                <p>Start sharing your referral code to invite friends and earn bonuses!</p>
+                <button class="btn btn-primary" onclick="scrollToShareSection()">
+                    <i class="fas fa-share-alt"></i> Share Your Code Now
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>How much do I earn per referral?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>You earn $5.00 instantly for each friend who signs up using your referral code and completes registration.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>When do I receive my referral bonus?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>The $5 bonus is added to your account immediately after your friend completes their registration using your referral code.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Is there a limit to how many people I can refer?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No! There's no limit. You can refer as many friends as you want and earn $5 for each successful referral.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Can my referred friends also refer others?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! When your friends sign up, they get their own referral code and can start earning by referring others.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>What if my friend doesn't use my referral code during signup?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>The referral code must be entered during registration. If they forget, they can't add it later, so make sure to share your code clearly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promotion Materials -->
+        <div class="promotion-section">
+            <h2>Promotion Materials</h2>
+            <p>Use these ready-made messages to share with your friends</p>
+            
+            <div class="promotion-cards">
+                <div class="promo-card">
+                    <h4>📱 Social Media Post</h4>
+                    <div class="promo-content">
+                        <p>🎵 Earn money by listening to music! Use my referral code <strong>{{ current_user.referral_code }}</strong> on MusicEarn and get started. We both get $5! 🎧</p>
+                        <button class="btn-copy-promo" onclick="copyPromoText('social')">
+                            <i class="fas fa-copy"></i> Copy Text
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="promo-card">
+                    <h4>📧 Email Template</h4>
+                    <div class="promo-content">
+                        <p>Hey! I found this amazing platform called MusicEarn where you can earn money by listening to music. Use my referral code <strong>{{ current_user.referral_code }}</strong> when you sign up and we both get $5 bonus! Check it out: {{ referral_url }}</p>
+                        <button class="btn-copy-promo" onclick="copyPromoText('email')">
+                            <i class="fas fa-copy"></i> Copy Text
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="promo-card">
+                    <h4>💬 WhatsApp Message</h4>
+                    <div class="promo-content">
+                        <p>Hey! Check out MusicEarn 🎵 You can earn money by listening to music! Use my code *{{ current_user.referral_code }}* when signing up and we both get $5! 🔥 {{ referral_url }}</p>
+                        <button class="btn-copy-promo" onclick="copyPromoText('whatsapp')">
+                            <i class="fas fa-copy"></i> Copy Text
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div id="copyToast" class="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Copied to clipboard!</span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/referral.js') }}"></script>
+{% endblock %}

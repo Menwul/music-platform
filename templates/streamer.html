@@ -1,0 +1,1129 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* Enhanced Dashboard Styles */
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-color: #1f2937;
+    --light-color: #f8fafc;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Sidebar Enhancement */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 0;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+    padding: 30px 25px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.user-welcome {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    margin: 15px;
+    border-radius: 12px;
+}
+
+.user-welcome h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+}
+
+.user-type {
+    opacity: 0.9;
+    font-size: 0.9em;
+    margin: 0;
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.menu-item i {
+    width: 25px;
+    margin-right: 12px;
+    font-size: 1.1em;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-left-color: rgba(255,255,255,0.5);
+}
+
+.menu-item.active {
+    background: rgba(255,255,255,0.15);
+    border-left-color: white;
+    font-weight: 600;
+}
+
+.user-balance {
+    background: rgba(255,255,255,0.1);
+    margin: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.balance-amount {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 10px 0;
+    color: white;
+}
+
+/* Main Content Enhancement */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+.content-header h1 {
+    font-size: 2.5em;
+    margin: 0 0 10px 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.content-header p {
+    color: #6b7280;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Stats Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 15px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5em;
+}
+
+.stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.9em;
+}
+
+/* Ad Container Enhancement */
+.ad-container {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
+    border-left: 5px solid var(--warning-color);
+}
+
+.ad-container h3 {
+    margin: 0 0 20px 0;
+    color: var(--dark-color);
+    font-size: 1.5em;
+}
+
+.ad-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.ad-placeholder {
+    background: #f8fafc;
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.ad-placeholder h4 {
+    margin: 0 0 10px 0;
+    color: var(--dark-color);
+}
+
+.ad-timer {
+    font-size: 3em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 20px 0;
+}
+
+.ad-progress {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.ad-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    width: 0%;
+    transition: width 1s linear;
+}
+
+.btn-ad-action {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+
+.btn-ad-action:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-ad-action:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ad-rewards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.reward-badge {
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ad-unlock-active {
+    background: #d1fae5;
+    border-left: 5px solid var(--success-color);
+}
+
+/* Music Grid Enhancement */
+.music-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.music-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.music-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.music-card.playing {
+    border: 2px solid var(--primary-color);
+}
+
+.music-cover {
+    height: 160px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3em;
+}
+
+.music-info {
+    padding: 20px;
+}
+
+.music-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--dark-color);
+    font-size: 1.2em;
+}
+
+.music-artist {
+    color: #6b7280;
+    margin: 0 0 10px 0;
+    font-size: 0.9em;
+}
+
+.music-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.85em;
+    color: #6b7280;
+}
+
+.earnings-info {
+    background: #eff6ff;
+    color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9em;
+    display: inline-block;
+}
+
+.btn-play {
+    background: linear-gradient(135deg, var(--success-color), #34d399);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-play:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+}
+
+.btn-play:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Audio Player Enhancement */
+.audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 280px;
+    right: 0;
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.now-playing {
+    flex: 1;
+}
+
+.now-playing h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.now-playing p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9em;
+}
+
+#audioElement {
+    flex: 2;
+    height: 40px;
+}
+
+.player-controls {
+    display: flex;
+    gap: 15px;
+}
+
+.player-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.player-btn:hover {
+    background: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+/* Modal Enhancement */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    padding: 25px 30px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.close {
+    color: #6b7280;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: var(--danger-color);
+}
+
+.modal-body {
+    padding: 25px 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--dark-color);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1001;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background: var(--success-color);
+}
+
+.toast.error {
+    background: var(--danger-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .audio-player {
+        left: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: static;
+    }
+    
+    .audio-player {
+        position: static;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .music-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 20px 15px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ad-rewards {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-music"></i> S.S PRODUCTION</h2>
+        </div>
+        
+        <div class="user-welcome">
+            <h3>Welcome, {{ current_user.username }}!</h3>
+            <p class="user-type">Streamer Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{{ url_for('dashboard') }}" class="menu-item active">
+                <i class="fas fa-headphones"></i> Listen & Earn
+            </a>
+            <a href="{{ url_for('referral') }}" class="menu-item">
+                <i class="fas fa-users"></i> Referral Program
+            </a>
+            <a href="#" class="menu-item" onclick="showWithdrawModal()">
+                <i class="fas fa-wallet"></i> Withdraw Funds
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+        
+        <div class="user-balance">
+            <h3>Your Balance</h3>
+            <p class="balance-amount">${{ "%.2f"|format(current_user.balance) }}</p>
+            <p>Minimum withdrawal: $10</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Listen & Earn Money</h1>
+            <p>Watch ads and listen to music to earn money. Complete ads to unlock music playback.</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="stat-number" id="totalPlays">0</div>
+                <div class="stat-label">Total Plays</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-number">$<span id="totalEarnings">{{ "%.2f"|format(current_user.balance) }}</span></div>
+                <div class="stat-label">Total Earnings</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="stat-number">{{ tracks|length }}</div>
+                <div class="stat-label">Available Tracks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="stat-number" id="adsWatched">0</div>
+                <div class="stat-label">Ads Watched</div>
+            </div>
+        </div>
+
+        <!-- Ad Container -->
+        <div class="ad-container" id="adContainer">
+            <h3>Watch Ad to Unlock Music</h3>
+            <div class="ad-content">
+                <div class="ad-placeholder">
+                    <h4>Advertisement</h4>
+                    <p>Please watch this ad to continue listening to music</p>
+                    <div class="ad-timer">
+                        <span id="adCountdown">30</span>s
+                    </div>
+                    <div class="ad-progress">
+                        <div class="ad-progress-bar" id="adProgressBar"></div>
+                    </div>
+                </div>
+                <button class="btn-ad-action" onclick="startAd()" id="startAdBtn">
+                    <i class="fas fa-play"></i> Start Watching Ad (30s)
+                </button>
+                <button class="btn-ad-action" onclick="completeAd()" id="completeAdBtn" style="display: none;" disabled>
+                    <i class="fas fa-check"></i> Complete Ad & Earn $0.02
+                </button>
+                
+                <div class="ad-rewards">
+                    <div class="reward-badge">
+                        <i class="fas fa-coins"></i> Earn $0.02
+                    </div>
+                    <div class="reward-badge">
+                        <i class="fas fa-unlock"></i> Unlock 30 min of music
+                    </div>
+                    <div class="reward-badge">
+                        <i class="fas fa-clock"></i> Valid for 30 seconds
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music Grid -->
+        <div class="music-grid" id="musicGrid">
+            {% for track in tracks %}
+            <div class="music-card" data-track-id="{{ track.id }}" id="track-{{ track.id }}">
+                <div class="music-cover">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="music-info">
+                    <h4>{{ track.title }}</h4>
+                    <p class="music-artist">By {{ track.artist.username }}</p>
+                    <div class="music-stats">
+                        <span><i class="fas fa-play"></i> {{ track.plays }} plays</span>
+                        <span><i class="fas fa-clock"></i> 
+                            {% if track.duration %}
+                                {{ (track.duration // 60)|int }}:{{ "{:02d}".format(track.duration % 60) }}
+                            {% else %}
+                                0:00
+                            {% endif %}
+                        </span>
+                    </div>
+                    <p class="earnings-info">Earn: $0.02 per play</p>
+                    <button class="btn-play" onclick="playTrack({{ track.id }})" id="playBtn-{{ track.id }}">
+                        <i class="fas fa-play"></i> Play & Earn
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Audio Player -->
+        <div class="audio-player" id="audioPlayer">
+            <div class="now-playing" id="nowPlaying">
+                <h4>No track playing</h4>
+                <p>Complete an ad to start listening</p>
+            </div>
+            <audio id="audioElement" controls></audio>
+            <div class="player-controls">
+                <button class="player-btn" onclick="skipBackward()">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="player-btn" onclick="togglePlayPause()">
+                    <i class="fas fa-play" id="playPauseIcon"></i>
+                </button>
+                <button class="player-btn" onclick="skipForward()">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div id="withdrawModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Withdraw Funds</h2>
+            <span class="close" onclick="closeWithdrawModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ url_for('withdraw') }}" id="withdrawForm">
+                <div class="form-group">
+                    <label>Available Balance: $<span id="modalBalance">{{ "%.2f"|format(current_user.balance) }}</span></label>
+                    <input type="number" name="amount" step="0.01" min="10" max="{{ current_user.balance }}" 
+                           placeholder="Enter amount (min $10)" required id="withdrawAmount">
+                    <small>Minimum withdrawal amount is $10. Processing time: 3-5 business days.</small>
+                </div>
+                <button type="submit" class="btn-ad-action" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> Request Withdrawal
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+    <i class="fas fa-info-circle"></i>
+    <span id="toastMessage"></span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Global variables
+let adTimer = null;
+let adSeconds = 30;
+let currentTrackId = null;
+let audioElement = document.getElementById('audioElement');
+let adUnlocked = false;
+
+// Initialize the dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    checkAdStatus();
+    loadUserStats();
+    
+    // Initialize audio element event listeners
+    audioElement.addEventListener('play', function() {
+        document.getElementById('playPauseIcon').className = 'fas fa-pause';
+        if (currentTrackId) {
+            document.getElementById(`track-${currentTrackId}`).classList.add('playing');
+        }
+    });
+    
+    audioElement.addEventListener('pause', function() {
+        document.getElementById('playPauseIcon').className = 'fas fa-play';
+        if (currentTrackId) {
+            document.getElementById(`track-${currentTrackId}`).classList.remove('playing');
+        }
+    });
+    
+    audioElement.addEventListener('ended', function() {
+        trackCompleted();
+    });
+});
+
+// Check ad status from backend
+async function checkAdStatus() {
+    try {
+        const response = await fetch('/api/check_ad_status');
+        const data = await response.json();
+        
+        if (data.ad_unlocked) {
+            adUnlocked = true;
+            updateAdUI(data.minutes_left);
+            updatePlayButtons();
+        }
+    } catch (error) {
+        console.error('Error checking ad status:', error);
+    }
+}
+
+// Load user statistics
+async function loadUserStats() {
+    try {
+        const response = await fetch('/api/user_stats');
+        const data = await response.json();
+        
+        document.getElementById('totalPlays').textContent = data.total_plays;
+        document.getElementById('adsWatched').textContent = data.ads_watched;
+    } catch (error) {
+        console.error('Error loading user stats:', error);
+    }
+}
+
+// Update ad UI when unlocked
+function updateAdUI(minutesLeft) {
+    const adContainer = document.getElementById('adContainer');
+    adContainer.classList.add('ad-unlock-active');
+    adContainer.innerHTML = `
+        <h3>🎉 Ad Unlock Active!</h3>
+        <div class="ad-content">
+            <div style="font-size: 3em; color: #10b981; margin: 20px 0;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <p>You can listen to music for the next <strong>${minutesLeft} minutes</strong></p>
+            <button class="btn-ad-action" onclick="showAdAgain()">
+                <i class="fas fa-sync"></i> Watch Another Ad to Extend
+            </button>
+        </div>
+    `;
+}
+
+// Start watching an ad
+async function startAd() {
+    try {
+        const response = await fetch('/api/start_ad', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('startAdBtn').style.display = 'none';
+            document.getElementById('completeAdBtn').style.display = 'block';
+            
+            let secondsLeft = adSeconds;
+            document.getElementById('adCountdown').textContent = secondsLeft;
+            
+            // Reset and start progress bar
+            const progressBar = document.getElementById('adProgressBar');
+            progressBar.style.width = '0%';
+            
+            // Start countdown
+            adTimer = setInterval(function() {
+                secondsLeft--;
+                document.getElementById('adCountdown').textContent = secondsLeft;
+                
+                // Update progress bar
+                const progress = ((adSeconds - secondsLeft) / adSeconds) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(adTimer);
+                    document.getElementById('completeAdBtn').disabled = false;
+                    document.getElementById('adCountdown').textContent = '0';
+                    progressBar.style.width = '100%';
+                }
+            }, 1000);
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error starting ad:', error);
+        showToast('Error starting ad', 'error');
+    }
+}
+
+// Complete the ad and earn reward
+async function completeAd() {
+    try {
+        const response = await fetch('/api/complete_ad', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            clearInterval(adTimer);
+            adUnlocked = true;
+            
+            // Update UI
+            updateAdUI(30); // 30 minutes unlock
+            updatePlayButtons();
+            
+            // Update balance
+            document.querySelector('.balance-amount').textContent = `$${data.new_balance.toFixed(2)}`;
+            document.getElementById('totalEarnings').textContent = data.new_balance.toFixed(2);
+            document.getElementById('modalBalance').textContent = data.new_balance.toFixed(2);
+            
+            // Update ads watched count
+            loadUserStats();
+            
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error completing ad:', error);
+        showToast('Error completing ad', 'error');
+    }
+}
+
+// Show ad again option
+function showAdAgain() {
+    location.reload();
+}
+
+// Update play buttons based on ad status
+function updatePlayButtons() {
+    const playButtons = document.querySelectorAll('.btn-play');
+    playButtons.forEach(button => {
+        if (adUnlocked) {
+            button.disabled = false;
+        } else {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-lock"></i> Complete Ad to Play';
+        }
+    });
+}
+
+// Play a specific track
+async function playTrack(trackId) {
+    if (!adUnlocked) {
+        showToast('Please complete an ad first to unlock music playback.', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/play_track/${trackId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentTrackId = trackId;
+            const trackElement = document.getElementById(`track-${trackId}`);
+            const trackTitle = trackElement.querySelector('h4').textContent;
+            const artistName = trackElement.querySelector('.music-artist').textContent.replace('By ', '');
+            
+            // Update now playing info
+            document.getElementById('nowPlaying').innerHTML = `
+                <h4>${trackTitle}</h4>
+                <p>By ${artistName}</p>
+            `;
+            
+            // Set audio source
+            audioElement.src = data.track_url;
+            
+            // Show audio player
+            document.getElementById('audioPlayer').style.display = 'flex';
+            
+            // Update UI
+            document.querySelector('.balance-amount').textContent = `$${data.new_balance.toFixed(2)}`;
+            document.getElementById('totalEarnings').textContent = data.new_balance.toFixed(2);
+            document.getElementById('modalBalance').textContent = data.new_balance.toFixed(2);
+            
+            // Update play count
+            const playsElement = trackElement.querySelector('.music-stats span');
+            const currentPlays = parseInt(playsElement.textContent.match(/\d+/)[0]) || 0;
+            playsElement.innerHTML = `<i class="fas fa-play"></i> ${currentPlays + 1} plays`;
+            
+            // Update total plays
+            loadUserStats();
+            
+            // Play the audio
+            audioElement.play().catch(e => {
+                console.error("Error playing audio:", e);
+                showToast("Error playing track. Please try again.", 'error');
+            });
+            
+            showToast(`Earned $${data.earnings.toFixed(2)}!`, 'success');
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error playing track:', error);
+        showToast('Error playing track', 'error');
+    }
+}
+
+// Toggle play/pause
+function togglePlayPause() {
+    if (audioElement.paused) {
+        audioElement.play();
+    } else {
+        audioElement.pause();
+    }
+}
+
+// Skip backward 10 seconds
+function skipBackward() {
+    audioElement.currentTime = Math.max(0, audioElement.currentTime - 10);
+}
+
+// Skip forward 10 seconds
+function skipForward() {
+    audioElement.currentTime = Math.min(audioElement.duration, audioElement.currentTime + 10);
+}
+
+// Handle track completion
+function trackCompleted() {
+    if (currentTrackId) {
+        // Track completed, you can add additional logic here
+        currentTrackId = null;
+    }
+}
+
+// Toast notification
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Withdraw modal functions
+function showWithdrawModal() {
+    document.getElementById('withdrawModal').style.display = 'block';
+}
+
+function closeWithdrawModal() {
+    document.getElementById('withdrawModal').style.display = 'none';
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const withdrawModal = document.getElementById('withdrawModal');
+    
+    if (event.target === withdrawModal) {
+        closeWithdrawModal();
+    }
+}
+
+// Form validation for withdrawal
+document.getElementById('withdrawForm')?.addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const balance = parseFloat("{{ current_user.balance }}");
+    
+    if (amount < 10) {
+        e.preventDefault();
+        showToast('Minimum withdrawal amount is $10.', 'error');
+        return;
+    }
+    
+    if (amount > balance) {
+        e.preventDefault();
+        showToast('Insufficient balance for this withdrawal.', 'error');
+        return;
+    }
+});
+</script>
+{% endblock %}

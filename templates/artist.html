@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/artist.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-music"></i> S.S PRODUCTION</h2>
+            <p class="user-type">Artist Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{{ url_for('artist_dashboard') }}" class="menu-item active">
+                <i class="fas fa-chart-line"></i> Analytics
+            </a>
+            <a href="{{ url_for('upload') }}" class="menu-item">
+                <i class="fas fa-upload"></i> Upload Music
+            </a>
+            <a href="{{ url_for('referral') }}" class="menu-item">
+                <i class="fas fa-users"></i> Referral Program
+            </a>
+            <a href="#" class="menu-item" onclick="showWithdrawModal()">
+                <i class="fas fa-wallet"></i> Withdraw Funds
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+        
+        <div class="user-balance">
+            <h3>Your Balance</h3>
+            <p class="balance-amount">${{ "%.2f"|format(current_user.balance) }}</p>
+            <p class="referral-code">Ref Code: {{ current_user.referral_code }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>Welcome, {{ current_user.username }}! 🎵</h1>
+            <p>Manage your music and track your earnings</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-number">${{ "%.2f"|format(total_earnings) }}</div>
+                <div class="stat-label">Total Earnings</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="stat-number">{{ tracks|length }}</div>
+                <div class="stat-label">Total Tracks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-headphones"></i>
+                </div>
+                <div class="stat-number">{{ total_plays }}</div>
+                <div class="stat-label">Total Plays</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number">{{ listeners_count }}</div>
+                <div class="stat-label">Unique Listeners</div>
+            </div>
+        </div>
+
+        <!-- Your Tracks -->
+        <div class="tracks-section">
+            <div class="section-header">
+                <h2>Your Music Tracks</h2>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Upload New Track
+                </a>
+            </div>
+
+            {% if tracks %}
+            <div class="tracks-table">
+                <div class="table-header">
+                    <div class="col-title">Track Title</div>
+                    <div class="col-plays">Plays</div>
+                    <div class="col-earnings">Earnings</div>
+                    <div class="col-date">Upload Date</div>
+                    <div class="col-actions">Actions</div>
+                </div>
+                
+                {% for track in tracks %}
+                <div class="table-row">
+                    <div class="col-title">
+                        <div class="track-info">
+                            <i class="fas fa-music"></i>
+                            <div>
+                                <strong>{{ track.title }}</strong>
+                                <span class="track-id">ID: {{ track.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-plays">
+                        <span class="play-count">{{ track.plays }}</span>
+                        <small>plays</small>
+                    </div>
+                    <div class="col-earnings">
+                        <span class="earnings-amount">${{ "%.2f"|format(track.earnings) }}</span>
+                    </div>
+                    <div class="col-date">
+                        {{ track.upload_date.strftime('%b %d, %Y') }}
+                    </div>
+                    <div class="col-actions">
+                        <button class="btn-action" onclick="shareTrack({{ track.id }})" title="Share">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="btn-action btn-danger" onclick="deleteTrack({{ track.id }})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-music"></i>
+                <h3>No tracks uploaded yet</h3>
+                <p>Start earning by uploading your first track</p>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Your First Track
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Performing Tracks -->
+        <div class="top-tracks-section">
+            <div class="section-header">
+                <h2>Top Performing Tracks</h2>
+            </div>
+            <div class="top-tracks-grid">
+                {% for track in top_tracks %}
+                <div class="top-track-card">
+                    <div class="track-rank">#{{ loop.index }}</div>
+                    <div class="track-info">
+                        <h4>{{ track.title }}</h4>
+                        <p>{{ track.plays }} plays • ${{ "%.2f"|format(track.earnings) }} earned</p>
+                    </div>
+                    <div class="track-performance">
+                        <div class="performance-bar">
+                            <!-- FIXED: Added proper zero division check -->
+                            <div class="performance-fill" style="width: {{ (track.plays / (top_tracks[0].plays if top_tracks and top_tracks[0].plays > 0 else 1)) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state-small">
+                    <p>No performance data yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div id="withdrawModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeWithdrawModal()">&times;</span>
+        <h2>Withdraw Funds</h2>
+        <form method="POST" action="{{ url_for('withdraw') }}">
+            <div class="form-group">
+                <label>Available Balance: ${{ "%.2f"|format(current_user.balance) }}</label>
+                <input type="number" name="amount" step="0.01" min="10" max="{{ current_user.balance }}" 
+                       placeholder="Enter amount (min $10)" required>
+            </div>
+            <div class="withdrawal-info">
+                <p><i class="fas fa-info-circle"></i> Withdrawals are processed within 3-5 business days</p>
+            </div>
+            <button type="submit" class="btn btn-primary">Request Withdrawal</button>
+        </form>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div id="shareModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeShareModal()">&times;</span>
+        <h2>Share Track</h2>
+        <div class="share-content">
+            <p>Share this track to get more plays and earn more!</p>
+            <div class="share-link">
+                <input type="text" id="shareUrl" readonly>
+                <button class="btn btn-copy" onclick="copyShareUrl()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <div class="share-buttons">
+                <button class="btn btn-share facebook" onclick="shareToFacebook()">
+                    <i class="fab fa-facebook"></i> Facebook
+                </button>
+                <button class="btn btn-share twitter" onclick="shareToTwitter()">
+                    <i class="fab fa-twitter"></i> Twitter
+                </button>
+                <button class="btn btn-share whatsapp" onclick="shareToWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/artist.js') }}"></script>
+{% endblock %}

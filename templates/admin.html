@@ -1,0 +1,1675 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+/* Enhanced Admin Styles */
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+/* Bulk Actions */
+.bulk-actions {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+}
+
+.bulk-actions select {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Enhanced Tables */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.admin-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.admin-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.banned {
+    background: #ffeaa7;
+    color: #856404;
+}
+
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.approved {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-badge.rejected {
+    background: #f5c6cb;
+    color: #721c24;
+}
+
+.status-badge.processed {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-action {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+}
+
+.btn-edit {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-deactivate {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-activate {
+    background: #28a745;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-ban {
+    background: #fd7e14;
+    color: white;
+}
+
+.btn-unban {
+    background: #20c997;
+    color: white;
+}
+
+.btn-preview {
+    background: #6f42c1;
+    color: white;
+}
+
+/* Filter Bar */
+.filter-bar {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+/* User Type Badges */
+.user-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+.user-type-badge.streamer {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.user-type-badge.artist {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.user-type-badge.admin {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Ban Modal */
+.ban-duration {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.ban-option {
+    padding: 10px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ban-option:hover {
+    border-color: #007bff;
+}
+
+.ban-option.selected {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+.ban-option input {
+    display: none;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.quick-stat {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quick-stat h3 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #007bff;
+}
+
+.quick-stat p {
+    margin: 5px 0 0 0;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group input,
+    .filter-group select {
+        min-width: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .admin-table {
+        font-size: 0.8em;
+    }
+}
+
+/* Search and Filter Enhancements */
+.search-box {
+    position: relative;
+    flex: 1;
+}
+
+.search-box input {
+    width: 100%;
+    padding-left: 35px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+/* Export Section */
+.export-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.export-option {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.export-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.export-option i {
+    font-size: 2em;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+/* System Health */
+.system-health {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.health-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.health-item:last-child {
+    border-bottom: none;
+}
+
+.health-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+.health-status.healthy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.health-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.health-status.critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+/* Setting Groups */
+.setting-group {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.setting-item label {
+    min-width: 200px;
+    font-weight: 600;
+}
+
+.setting-item input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-container canvas {
+    max-height: 400px;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-crown"></i> Admin Panel</h2>
+            <p class="user-type">Administrator</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="#dashboard" class="menu-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#users" class="menu-item" onclick="showSection('users')">
+                <i class="fas fa-users"></i> Manage Users
+            </a>
+            <a href="#music" class="menu-item" onclick="showSection('music')">
+                <i class="fas fa-music"></i> Manage Music
+            </a>
+            <a href="#withdrawals" class="menu-item" onclick="showSection('withdrawals')">
+                <i class="fas fa-money-bill-wave"></i> Withdrawals
+            </a>
+            <a href="#reports" class="menu-item" onclick="showSection('reports')">
+                <i class="fas fa-chart-bar"></i> Reports
+            </a>
+            <a href="#system" class="menu-item" onclick="showSection('system')">
+                <i class="fas fa-cog"></i> System
+            </a>
+            <a href="{{ url_for('logout') }}" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+        
+        <div class="user-balance">
+            <h3>Admin Access</h3>
+            <p class="balance-amount">{{ total_users }} Users</p>
+            <p class="storage-info">
+                <i class="fas fa-shield-alt"></i> Full Control
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="admin-section active">
+            <div class="content-header">
+                <h1>Admin Dashboard</h1>
+                <p>Overview of platform statistics and performance</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <h3>{{ total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="quick-stat">
+                    <h3>{{ total_tracks }}</h3>
+                    <p>Total Tracks</p>
+                </div>
+                <div class="quick-stat">
+                    <h3>${{ "%.2f"|format(total_earnings) }}</h3>
+                    <p>Platform Revenue</p>
+                </div>
+                <div class="quick-stat">
+                    <h3>{{ pending_withdrawals }}</h3>
+                    <p>Pending Withdrawals</p>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="admin-stats-grid">
+                <!-- ... existing stats grid ... -->
+            </div>
+
+            <!-- System Health -->
+            <div class="system-health">
+                <h3>System Health</h3>
+                <div class="health-item">
+                    <span>Database</span>
+                    <span class="health-status healthy">Healthy</span>
+                </div>
+                <div class="health-item">
+                    <span>File Storage</span>
+                    <span class="health-status healthy">Healthy</span>
+                </div>
+                <div class="health-item">
+                    <span>User Activity</span>
+                    <span class="health-status healthy">Normal</span>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="showSection('users')">
+                        <i class="fas fa-user-cog"></i> Manage Users
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSection('music')">
+                        <i class="fas fa-music"></i> Manage Tracks
+                    </button>
+                    <button class="btn btn-warning" onclick="showSection('withdrawals')">
+                        <i class="fas fa-money-check"></i> Process Withdrawals
+                    </button>
+                    <button class="btn btn-info" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Management Section -->
+        <div id="users-section" class="admin-section">
+            <div class="content-header">
+                <h1>User Management</h1>
+                <p>Manage all platform users and their accounts</p>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions">
+                <strong>Bulk Actions:</strong>
+                <select id="bulkUserAction">
+                    <option value="">Select Action</option>
+                    <option value="activate">Activate Selected</option>
+                    <option value="deactivate">Deactivate Selected</option>
+                    <option value="ban_1h">Ban for 1 Hour</option>
+                    <option value="ban_24h">Ban for 24 Hours</option>
+                    <option value="ban_7d">Ban for 7 Days</option>
+                    <option value="unban">Remove Ban</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+                <button class="btn btn-primary" onclick="applyBulkUserAction()">Apply</button>
+                <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAllUsers()">
+                <label for="selectAllUsers">Select All</label>
+            </div>
+
+            <!-- Users Filter -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="userSearch" placeholder="Search users..." onkeyup="filterUsers()">
+                    </div>
+                    <select id="userTypeFilter" onchange="filterUsers()">
+                        <option value="">All Types</option>
+                        <option value="streamer">Streamers</option>
+                        <option value="artist">Artists</option>
+                        <option value="admin">Admins</option>
+                    </select>
+                    <select id="userStatusFilter" onchange="filterUsers()">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="banned">Banned</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllUsersHeader" onchange="toggleSelectAllUsers()"></th>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for user in all_users %}
+                        <tr data-user-id="{{ user.id }}" data-type="{{ user.user_type }}" 
+                            data-status="{{ 'banned' if user.is_banned else 'active' if user.is_active else 'inactive' }}">
+                            <td><input type="checkbox" class="user-checkbox" value="{{ user.id }}"></td>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                <div class="user-info">
+                                    <strong>{{ user.username }}</strong>
+                                    {% if user.user_type == 'admin' %}
+                                    <span class="badge badge-admin">Admin</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="user-type-badge {{ user.user_type }}">
+                                    {{ user.user_type|title }}
+                                </span>
+                            </td>
+                            <td>${{ "%.2f"|format(user.balance) }}</td>
+                            <td>
+                                {% if user.is_banned %}
+                                <span class="status-badge banned">Banned</span>
+                                {% else %}
+                                <span class="status-badge {{ 'active' if user.is_active else 'inactive' }}">
+                                    {{ 'Active' if user.is_active else 'Inactive' }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-edit" onclick="editUser({{ user.id }})" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    {% if user.is_banned %}
+                                    <button class="btn-action btn-unban" onclick="unbanUser({{ user.id }})" title="Unban">
+                                        <i class="fas fa-unlock"></i>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn-action btn-{{ 'deactivate' if user.is_active else 'activate' }}" 
+                                            onclick="toggleUserStatus({{ user.id }}, {{ user.is_active }})"
+                                            title="{{ 'Deactivate' if user.is_active else 'Activate' }}">
+                                        <i class="fas fa-{{ 'ban' if user.is_active else 'check' }}"></i>
+                                    </button>
+                                    <button class="btn-action btn-ban" onclick="showBanModal({{ user.id }})" title="Ban User">
+                                        <i class="fas fa-gavel"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn-action btn-danger" onclick="deleteUser({{ user.id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Music Management Section -->
+        <div id="music-section" class="admin-section">
+            <div class="content-header">
+                <h1>Music Management</h1>
+                <p>Manage all tracks uploaded to the platform</p>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions">
+                <strong>Bulk Actions:</strong>
+                <select id="bulkMusicAction">
+                    <option value="">Select Action</option>
+                    <option value="activate">Activate Selected</option>
+                    <option value="deactivate">Deactivate Selected</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+                <button class="btn btn-primary" onclick="applyBulkMusicAction()">Apply</button>
+                <input type="checkbox" id="selectAllTracks" onchange="toggleSelectAllTracks()">
+                <label for="selectAllTracks">Select All</label>
+            </div>
+
+            <!-- Music Filter -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="musicSearch" placeholder="Search tracks..." onkeyup="filterMusic()">
+                    </div>
+                    <select id="musicStatusFilter" onchange="filterMusic()">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Music Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllTracksHeader" onchange="toggleSelectAllTracks()"></th>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Plays</th>
+                            <th>Earnings</th>
+                            <th>Genre</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="musicTableBody">
+                        {% for track in all_tracks %}
+                        <tr data-track-id="{{ track.id }}" data-status="{{ 'active' if track.is_active else 'inactive' }}">
+                            <td><input type="checkbox" class="track-checkbox" value="{{ track.id }}"></td>
+                            <td>{{ track.id }}</td>
+                            <td>
+                                <div class="track-info">
+                                    <strong>{{ track.title }}</strong>
+                                    {% if track.description %}
+                                    <small>{{ track.description[:50] }}{% if track.description|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ track.artist.username }}</td>
+                            <td>{{ track.plays }}</td>
+                            <td>${{ "%.2f"|format(track.earnings) }}</td>
+                            <td>
+                                {% if track.genre %}
+                                <span class="genre-badge">{{ track.genre|title }}</span>
+                                {% else %}
+                                <span class="genre-badge unknown">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge {{ 'active' if track.is_active else 'inactive' }}">
+                                    {{ 'Active' if track.is_active else 'Inactive' }}
+                                </span>
+                            </td>
+                            <td>{{ track.upload_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-preview" onclick="previewTrack({{ track.id }})" title="Preview">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn-action btn-{{ 'deactivate' if track.is_active else 'activate' }}" 
+                                            onclick="toggleTrackStatus({{ track.id }}, {{ track.is_active }})"
+                                            title="{{ 'Deactivate' if track.is_active else 'Activate' }}">
+                                        <i class="fas fa-{{ 'ban' if track.is_active else 'check' }}"></i>
+                                    </button>
+                                    <button class="btn-action btn-danger" onclick="deleteTrack({{ track.id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Withdrawals Management Section -->
+        <div id="withdrawals-section" class="admin-section">
+            <div class="content-header">
+                <h1>Withdrawal Management</h1>
+                <p>Process and manage user withdrawal requests</p>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-actions">
+                <strong>Bulk Actions:</strong>
+                <select id="bulkWithdrawalAction">
+                    <option value="">Select Action</option>
+                    <option value="approve">Approve Selected</option>
+                    <option value="reject">Reject Selected</option>
+                    <option value="process">Mark as Processed</option>
+                </select>
+                <button class="btn btn-primary" onclick="applyBulkWithdrawalAction()">Apply</button>
+                <input type="checkbox" id="selectAllWithdrawals" onchange="toggleSelectAllWithdrawals()">
+                <label for="selectAllWithdrawals">Select All</label>
+            </div>
+
+            <!-- Withdrawals Filter -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="withdrawalSearch" placeholder="Search withdrawals..." onkeyup="filterWithdrawals()">
+                    </div>
+                    <select id="withdrawalStatusFilter" onchange="filterWithdrawals()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="processed">Processed</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Withdrawals Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllWithdrawalsHeader" onchange="toggleSelectAllWithdrawals()"></th>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Requested</th>
+                            <th>Processed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdrawalsTableBody">
+                        {% for withdrawal in all_withdrawals %}
+                        <tr data-withdrawal-id="{{ withdrawal.id }}" data-status="{{ withdrawal.status }}">
+                            <td><input type="checkbox" class="withdrawal-checkbox" value="{{ withdrawal.id }}"></td>
+                            <td>{{ withdrawal.id }}</td>
+                            <td>
+                                <div class="user-info">
+                                    <strong>{{ withdrawal.user.username }}</strong>
+                                    <small>{{ withdrawal.user.email }}</small>
+                                </div>
+                            </td>
+                            <td>${{ "%.2f"|format(withdrawal.amount) }}</td>
+                            <td>
+                                <span class="status-badge {{ withdrawal.status }}">
+                                    {{ withdrawal.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ withdrawal.requested_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if withdrawal.processed_at %}
+                                {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                <span class="text-muted">Not processed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    {% if withdrawal.status == 'pending' %}
+                                    <button class="btn-action btn-success" onclick="approveWithdrawal({{ withdrawal.id }})" title="Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn-action btn-danger" onclick="rejectWithdrawal({{ withdrawal.id }})" title="Reject">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% elif withdrawal.status == 'approved' %}
+                                    <button class="btn-action btn-primary" onclick="markWithdrawalProcessed({{ withdrawal.id }})" title="Mark as Processed">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn-action btn-edit" onclick="viewWithdrawalDetails({{ withdrawal.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports-section" class="admin-section">
+            <div class="content-header">
+                <h1>Reports & Analytics</h1>
+                <p>Platform performance and financial reports</p>
+            </div>
+
+            <!-- Report Filters -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <select id="reportPeriod" onchange="generateReport()">
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d" selected>Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                        <option value="1y">Last Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                    <select id="reportType" onchange="generateReport()">
+                        <option value="overview">Overview</option>
+                        <option value="earnings">Earnings</option>
+                        <option value="users">User Growth</option>
+                        <option value="music">Music Performance</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="exportReport()">
+                        <i class="fas fa-download"></i> Export Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container">
+                <canvas id="reportChart"></canvas>
+            </div>
+
+            <!-- Report Summary -->
+            <div class="quick-stats" id="reportSummary">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Export Options -->
+            <div class="setting-group">
+                <h3>Export Reports</h3>
+                <div class="export-options">
+                    <div class="export-option" onclick="exportData('users')">
+                        <i class="fas fa-users"></i>
+                        <h4>Export Users</h4>
+                        <p>CSV format</p>
+                    </div>
+                    <div class="export-option" onclick="exportData('tracks')">
+                        <i class="fas fa-music"></i>
+                        <h4>Export Tracks</h4>
+                        <p>CSV format</p>
+                    </div>
+                    <div class="export-option" onclick="exportData('earnings')">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Export Earnings</h4>
+                        <p>CSV format</p>
+                    </div>
+                    <div class="export-option" onclick="exportData('withdrawals')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h4>Export Withdrawals</h4>
+                        <p>CSV format</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Management Section -->
+        <div id="system-section" class="admin-section">
+            <div class="content-header">
+                <h1>System Management</h1>
+                <p>Platform configuration and maintenance</p>
+            </div>
+
+            <div class="system-settings">
+                <div class="setting-group">
+                    <h3>Platform Settings</h3>
+                    <div class="setting-item">
+                        <label>Minimum Withdrawal Amount</label>
+                        <input type="number" id="minWithdrawal" value="10" step="0.01">
+                        <button class="btn btn-primary" onclick="updatePlatformSetting('min_withdrawal', document.getElementById('minWithdrawal').value)">Update</button>
+                    </div>
+                    <div class="setting-item">
+                        <label>Ad Watch Duration (seconds)</label>
+                        <input type="number" id="adDuration" value="30" step="1">
+                        <button class="btn btn-primary" onclick="updatePlatformSetting('ad_duration', document.getElementById('adDuration').value)">Update</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h3>Maintenance</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-warning" onclick="clearOldSessions()">
+                            <i class="fas fa-broom"></i> Clear Old Sessions
+                        </button>
+                        <button class="btn btn-info" onclick="backupDatabase()">
+                            <i class="fas fa-database"></i> Backup Database
+                        </button>
+                        <button class="btn btn-danger" onclick="clearCache()">
+                            <i class="fas fa-sync"></i> Clear Cache
+                        </button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h3>Data Export</h3>
+                    <div class="export-options">
+                        <div class="export-option" onclick="exportData('users')">
+                            <i class="fas fa-users"></i>
+                            <h4>Export Users</h4>
+                            <p>CSV format</p>
+                        </div>
+                        <div class="export-option" onclick="exportData('tracks')">
+                            <i class="fas fa-music"></i>
+                            <h4>Export Tracks</h4>
+                            <p>CSV format</p>
+                        </div>
+                        <div class="export-option" onclick="exportData('earnings')">
+                            <i class="fas fa-chart-line"></i>
+                            <h4>Export Earnings</h4>
+                            <p>CSV format</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ban User Modal -->
+<div id="banUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeBanModal()">&times;</span>
+        <h2>Ban User</h2>
+        <div id="banUserInfo"></div>
+        <div class="ban-duration">
+            <label class="ban-option" onclick="selectBanDuration('1h')">
+                <input type="radio" name="banDuration" value="1h">
+                <div>
+                    <strong>1 Hour</strong>
+                    <small>Temporary restriction</small>
+                </div>
+            </label>
+            <label class="ban-option" onclick="selectBanDuration('24h')">
+                <input type="radio" name="banDuration" value="24h">
+                <div>
+                    <strong>24 Hours</strong>
+                    <small>Daily ban</small>
+                </div>
+            </label>
+            <label class="ban-option" onclick="selectBanDuration('7d')">
+                <input type="radio" name="banDuration" value="7d">
+                <div>
+                    <strong>7 Days</strong>
+                    <small>Weekly ban</small>
+                </div>
+            </label>
+            <label class="ban-option" onclick="selectBanDuration('permanent')">
+                <input type="radio" name="banDuration" value="permanent">
+                <div>
+                    <strong>Permanent</strong>
+                    <small>Indefinite ban</small>
+                </div>
+            </label>
+        </div>
+        <div class="form-group">
+            <label for="banReason">Reason for Ban</label>
+            <textarea id="banReason" placeholder="Enter reason for banning this user..." rows="3"></textarea>
+        </div>
+        <button class="btn btn-danger" onclick="confirmBan()">Ban User</button>
+    </div>
+</div>
+
+<!-- Withdrawal Details Modal -->
+<div id="withdrawalDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeWithdrawalDetailsModal()">&times;</span>
+        <h2>Withdrawal Details</h2>
+        <div id="withdrawalDetails"></div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeConfirmationModal()">&times;</span>
+        <h2 id="confirmationTitle">Confirm Action</h2>
+        <p id="confirmationMessage">Are you sure you want to perform this action?</p>
+        <div class="action-buttons">
+            <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            <button class="btn btn-secondary" onclick="closeConfirmationModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+// Enhanced Admin JavaScript
+let selectedBanUserId = null;
+let selectedBanDuration = null;
+let reportChart = null;
+
+function showSection(section) {
+    // Hide all sections
+    document.querySelectorAll('.admin-section').forEach(sec => {
+        sec.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(section + '-section').classList.add('active');
+    
+    // Update active menu item
+    document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Generate report if showing reports section
+    if (section === 'reports') {
+        generateReport();
+    }
+}
+
+// User Management Functions
+function showBanModal(userId) {
+    selectedBanUserId = userId;
+    document.getElementById('banUserModal').style.display = 'block';
+    
+    // Load user info
+    fetch(`/admin/user/${userId}`)
+        .then(response => response.json())
+        .then(user => {
+            document.getElementById('banUserInfo').innerHTML = `
+                <p>Ban user: <strong>${user.username}</strong> (${user.email})</p>
+            `;
+        })
+        .catch(error => {
+            console.error('Error loading user info:', error);
+            alert('Error loading user information');
+        });
+}
+
+function selectBanDuration(duration) {
+    selectedBanDuration = duration;
+    document.querySelectorAll('.ban-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    event.target.closest('.ban-option').classList.add('selected');
+}
+
+function confirmBan() {
+    if (!selectedBanDuration) {
+        alert('Please select a ban duration');
+        return;
+    }
+    
+    const reason = document.getElementById('banReason').value;
+    
+    fetch(`/admin/user/${selectedBanUserId}/ban`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            duration: selectedBanDuration,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeBanModal();
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error banning user:', error);
+        alert('Error banning user');
+    });
+}
+
+function closeBanModal() {
+    document.getElementById('banUserModal').style.display = 'none';
+    selectedBanUserId = null;
+    selectedBanDuration = null;
+    document.getElementById('banReason').value = '';
+    document.querySelectorAll('.ban-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+}
+
+function unbanUser(userId) {
+    if (confirm('Are you sure you want to unban this user?')) {
+        fetch(`/admin/user/${userId}/unban`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error unbanning user:', error);
+            alert('Error unbanning user');
+        });
+    }
+}
+
+// Bulk Actions
+function toggleSelectAllUsers() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    const isChecked = document.getElementById('selectAllUsers').checked;
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+}
+
+function applyBulkUserAction() {
+    const action = document.getElementById('bulkUserAction').value;
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user');
+        return;
+    }
+    
+    if (!action) {
+        alert('Please select an action');
+        return;
+    }
+    
+    if (confirm(`Apply ${action} to ${selectedUsers.length} users?`)) {
+        fetch('/admin/users/bulk_action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                user_ids: selectedUsers
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error applying bulk action:', error);
+            alert('Error applying bulk action');
+        });
+    }
+}
+
+// Withdrawal Management Functions
+function toggleSelectAllWithdrawals() {
+    const checkboxes = document.querySelectorAll('.withdrawal-checkbox');
+    const isChecked = document.getElementById('selectAllWithdrawals').checked;
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+}
+
+function applyBulkWithdrawalAction() {
+    const action = document.getElementById('bulkWithdrawalAction').value;
+    const selectedWithdrawals = Array.from(document.querySelectorAll('.withdrawal-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedWithdrawals.length === 0) {
+        alert('Please select at least one withdrawal');
+        return;
+    }
+    
+    if (!action) {
+        alert('Please select an action');
+        return;
+    }
+    
+    if (confirm(`Apply ${action} to ${selectedWithdrawals.length} withdrawals?`)) {
+        fetch('/admin/withdrawals/bulk_action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                withdrawal_ids: selectedWithdrawals
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error applying bulk withdrawal action:', error);
+            alert('Error applying bulk action');
+        });
+    }
+}
+
+function approveWithdrawal(withdrawalId) {
+    if (confirm('Approve this withdrawal request?')) {
+        fetch(`/admin/withdrawal/${withdrawalId}/approve`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error approving withdrawal:', error);
+            alert('Error approving withdrawal');
+        });
+    }
+}
+
+function rejectWithdrawal(withdrawalId) {
+    const reason = prompt('Enter reason for rejection:');
+    if (reason !== null) {
+        fetch(`/admin/withdrawal/${withdrawalId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error rejecting withdrawal:', error);
+            alert('Error rejecting withdrawal');
+        });
+    }
+}
+
+function markWithdrawalProcessed(withdrawalId) {
+    if (confirm('Mark this withdrawal as processed?')) {
+        fetch(`/admin/withdrawal/${withdrawalId}/mark_processed`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error marking withdrawal as processed:', error);
+            alert('Error updating withdrawal status');
+        });
+    }
+}
+
+function viewWithdrawalDetails(withdrawalId) {
+    fetch(`/admin/withdrawal/${withdrawalId}`)
+        .then(response => response.json())
+        .then(withdrawal => {
+            document.getElementById('withdrawalDetails').innerHTML = `
+                <div class="withdrawal-info">
+                    <p><strong>User:</strong> ${withdrawal.user.username} (${withdrawal.user.email})</p>
+                    <p><strong>Amount:</strong> $${withdrawal.amount}</p>
+                    <p><strong>Status:</strong> ${withdrawal.status}</p>
+                    <p><strong>Requested:</strong> ${new Date(withdrawal.requested_at).toLocaleString()}</p>
+                    ${withdrawal.processed_at ? 
+                        `<p><strong>Processed:</strong> ${new Date(withdrawal.processed_at).toLocaleString()}</p>` : 
+                        '<p><strong>Processed:</strong> Not yet processed</p>'
+                    }
+                    <p><strong>User Balance:</strong> $${withdrawal.user.balance}</p>
+                </div>
+            `;
+            document.getElementById('withdrawalDetailsModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error loading withdrawal details:', error);
+            alert('Error loading withdrawal details');
+        });
+}
+
+function closeWithdrawalDetailsModal() {
+    document.getElementById('withdrawalDetailsModal').style.display = 'none';
+}
+
+// Reports Functions
+function generateReport() {
+    const period = document.getElementById('reportPeriod').value;
+    const type = document.getElementById('reportType').value;
+    
+    fetch(`/admin/reports/data?period=${period}&type=${type}`)
+        .then(response => response.json())
+        .then(data => {
+            updateReportChart(data);
+            updateReportSummary(data.summary);
+        })
+        .catch(error => {
+            console.error('Error generating report:', error);
+            alert('Error generating report');
+        });
+}
+
+function updateReportChart(data) {
+    const ctx = document.getElementById('reportChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (reportChart) {
+        reportChart.destroy();
+    }
+    
+    reportChart = new Chart(ctx, {
+        type: data.chartType || 'line',
+        data: {
+            labels: data.labels,
+            datasets: data.datasets
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: data.title
+                }
+            }
+        }
+    });
+}
+
+function updateReportSummary(summary) {
+    const summaryElement = document.getElementById('reportSummary');
+    summaryElement.innerHTML = '';
+    
+    summary.forEach(stat => {
+        const statElement = document.createElement('div');
+        statElement.className = 'quick-stat';
+        statElement.innerHTML = `
+            <h3>${stat.value}</h3>
+            <p>${stat.label}</p>
+        `;
+        summaryElement.appendChild(statElement);
+    });
+}
+
+function exportReport() {
+    const period = document.getElementById('reportPeriod').value;
+    const type = document.getElementById('reportType').value;
+    
+    window.open(`/admin/reports/export?period=${period}&type=${type}`, '_blank');
+}
+
+// System Functions
+function updatePlatformSetting(key, value) {
+    fetch('/admin/system/update_setting', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            key: key,
+            value: value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Setting updated successfully');
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating setting:', error);
+        alert('Error updating setting');
+    });
+}
+
+function backupDatabase() {
+    if (confirm('Create database backup?')) {
+        fetch('/admin/system/backup')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Backup created successfully');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating backup:', error);
+                alert('Error creating backup');
+            });
+    }
+}
+
+function clearCache() {
+    if (confirm('Clear all cache?')) {
+        fetch('/admin/system/clear_cache')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Cache cleared successfully');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing cache:', error);
+                alert('Error clearing cache');
+            });
+    }
+}
+
+function clearOldSessions() {
+    if (confirm('Clear old sessions?')) {
+        fetch('/admin/system/clear_sessions')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Old sessions cleared successfully');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing sessions:', error);
+                alert('Error clearing sessions');
+            });
+    }
+}
+
+// Export Functions
+function exportData(type) {
+    window.open(`/admin/export/${type}`, '_blank');
+}
+
+// Filter Functions
+function filterUsers() {
+    const search = document.getElementById('userSearch').value.toLowerCase();
+    const typeFilter = document.getElementById('userTypeFilter').value;
+    const statusFilter = document.getElementById('userStatusFilter').value;
+    
+    document.querySelectorAll('#usersTableBody tr').forEach(row => {
+        const username = row.cells[2].textContent.toLowerCase();
+        const userType = row.dataset.type;
+        const userStatus = row.dataset.status;
+        
+        const matchesSearch = username.includes(search);
+        const matchesType = !typeFilter || userType === typeFilter;
+        const matchesStatus = !statusFilter || userStatus === statusFilter;
+        
+        row.style.display = (matchesSearch && matchesType && matchesStatus) ? '' : 'none';
+    });
+}
+
+function filterMusic() {
+    const search = document.getElementById('musicSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('musicStatusFilter').value;
+    
+    document.querySelectorAll('#musicTableBody tr').forEach(row => {
+        const title = row.cells[2].textContent.toLowerCase();
+        const trackStatus = row.dataset.status;
+        
+        const matchesSearch = title.includes(search);
+        const matchesStatus = !statusFilter || trackStatus === statusFilter;
+        
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    });
+}
+
+function filterWithdrawals() {
+    const search = document.getElementById('withdrawalSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('withdrawalStatusFilter').value;
+    
+    document.querySelectorAll('#withdrawalsTableBody tr').forEach(row => {
+        const username = row.cells[2].textContent.toLowerCase();
+        const withdrawalStatus = row.dataset.status;
+        
+        const matchesSearch = username.includes(search);
+        const matchesStatus = !statusFilter || withdrawalStatus === statusFilter;
+        
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    });
+}
+
+// Confirmation Modal
+function showConfirmationModal(title, message, confirmCallback) {
+    document.getElementById('confirmationTitle').textContent = title;
+    document.getElementById('confirmationMessage').textContent = message;
+    document.getElementById('confirmActionBtn').onclick = confirmCallback;
+    document.getElementById('confirmationModal').style.display = 'block';
+}
+
+function closeConfirmationModal() {
+    document.getElementById('confirmationModal').style.display = 'none';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    };
+    
+    // Generate initial report if on reports page
+    if (document.getElementById('reports-section').classList.contains('active')) {
+        generateReport();
+    }
+});
+</script>
+{% endblock %}
